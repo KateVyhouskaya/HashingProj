@@ -1,15 +1,14 @@
-﻿using HashingProject.Models;
+﻿using System;
+using System.Linq;
+using System.Text;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Configuration;
+using HashingProject.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Primitives;
 
 namespace HashingProject.Controllers
 {
@@ -26,17 +25,19 @@ namespace HashingProject.Controllers
         [HttpPost("/api")]
         public IActionResult IsHashConfirm([FromBody] RequestModel request)
         {
-            var message = request.Message;
             Request.Headers.TryGetValue("Event-Signature", out StringValues values);
             var signature = ParseHashValue(values.LastOrDefault());
             var secretKey = ConfigurationManager.AppSettings.Get("secretKey");
             string s;
 
+            var serializeModel = JsonConvert.SerializeObject(request);
+
             using (HMACSHA256 hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey)))
             {
-                byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
+                byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(serializeModel));
                 s = BitConverter.ToString(computedHash).Replace("-", string.Empty).ToLowerInvariant();
             }
+
 
             if (s == signature)
             {
