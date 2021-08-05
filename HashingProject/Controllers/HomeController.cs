@@ -15,17 +15,7 @@ namespace HashingProject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        //использование кортежа
-        //static (string, string) ParseHashValue(string eventSignature)
-        //{
-        //    //var lastSignature = eventSignature.Split(",").LastOrDefault().Replace(" ", string.Empty);
-        //    var parcedEvenSignature = eventSignature.Split("/SHA256/");
-        //    var keyId = parcedEvenSignature.FirstOrDefault();
-        //    //var keyId = parcedEvenSignature[0];
-        //    var signature = parcedEvenSignature.LastOrDefault();
-        //    //return lastSignature.Split("/SHA256/").LastOrDefault();
-        //    return (keyId, signature);
-        //}
+
         static string ParseHashValue(string eventSignature)
         {
             var lastSignature = eventSignature.Replace(" ", string.Empty);
