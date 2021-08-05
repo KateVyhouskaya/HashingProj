@@ -15,18 +15,35 @@ namespace HashingProject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-
+        //использование кортежа
+        //static (string, string) ParseHashValue(string eventSignature)
+        //{
+        //    //var lastSignature = eventSignature.Split(",").LastOrDefault().Replace(" ", string.Empty);
+        //    var parcedEvenSignature = eventSignature.Split("/SHA256/");
+        //    var keyId = parcedEvenSignature.FirstOrDefault();
+        //    //var keyId = parcedEvenSignature[0];
+        //    var signature = parcedEvenSignature.LastOrDefault();
+        //    //return lastSignature.Split("/SHA256/").LastOrDefault();
+        //    return (keyId, signature);
+        //}
         static string ParseHashValue(string eventSignature)
         {
-            var lastSignature = eventSignature.Split(",").LastOrDefault().Replace(" ", string.Empty);
+            var lastSignature = eventSignature.Replace(" ", string.Empty);
             return lastSignature.Split("/SHA256/").LastOrDefault();
+        }
+
+        public string GetSignatureById(string eventSignatures)
+        {
+            var configKeyId = ConfigurationManager.AppSettings.Get("keyId");
+            var signature = eventSignatures.Split(",").Where(x => x.Split("/")[0] == configKeyId).FirstOrDefault();
+            return ParseHashValue(signature);
         }
 
         [HttpPost("/api")]
         public IActionResult IsHashConfirm([FromBody] RequestModel request)
         {
             Request.Headers.TryGetValue("Event-Signature", out StringValues values);
-            var signature = ParseHashValue(values.LastOrDefault());
+            var signature = GetSignatureById(values);
             var secretKey = ConfigurationManager.AppSettings.Get("secretKey");
             string s;
 
@@ -37,7 +54,6 @@ namespace HashingProject.Controllers
                 byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(serializeModel));
                 s = BitConverter.ToString(computedHash).Replace("-", string.Empty).ToLowerInvariant();
             }
-
 
             if (s == signature)
             {
